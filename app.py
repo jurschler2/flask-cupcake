@@ -1,5 +1,5 @@
 """Flask app for Cupcakes"""
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 from models import db, connect_db, Cupcake
 
@@ -25,6 +25,11 @@ def serialize_cupcake(cupcake):
         "image": cupcake.image
     }
 
+@app.route('/')
+def show_homepage():
+    """ Show home page """
+
+    return render_template('cupcakes.html')
 
 @app.route("/api/cupcakes", methods=["GET"])
 def get_cupcakes():
@@ -64,3 +69,43 @@ def create_a_cupcake():
     serialized = serialize_cupcake(new_cupcake)
 
     return (jsonify(cupcake=serialized), 201)
+
+
+@app.route("/api/cupcakes/<int:cupcake_id>", methods=['PATCH'])
+def update_cupcake(cupcake_id):
+    """ Epdate a single cupcake """
+
+    flavor = request.json["flavor"]
+    size = request.json["size"]
+    rating = request.json["rating"]
+    image = request.json["image"] or None
+
+    cupcake = Cupcake.query.get_or_404(cupcake_id)
+
+    cupcake.flavor = flavor
+    cupcake.size = size
+    cupcake.rating = rating
+    cupcake.image = image
+
+    db.session.commit()
+
+    serialized = serialize_cupcake(cupcake)
+
+    return jsonify(cupcake=serialized)
+
+
+@app.route("/api/cupcakes/<int:cupcake_id>", methods=['DELETE'])
+def delete_cupcake(cupcake_id):
+    """ Delete a cupcake """
+
+    cupcake = Cupcake.query.get_or_404(cupcake_id)
+
+    db.session.delete(cupcake)
+    db.session.commit()
+
+    return jsonify({"message": "Deleted"})
+
+
+
+
+

@@ -36,3 +36,5 @@ class Cupcake(db.Model):
     image = db.Column(db.Text,
                       nullable=False,
                       default="/static/default.png")
+
+
